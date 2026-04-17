@@ -1,0 +1,17 @@
+{
+  "name": "ngs-medical-ai-passmark-tests",
+  "version": "1.0.0",
+  "description": "Breaking Apps Hackathon 2026 — AI safety classifier + MONAI Label OHIF UI testing",
+  "scripts": {
+    "test": "playwright test",
+    "test:safety": "playwright test tests/safety-classifier/",
+    "test:monai": "playwright test tests/monai-label/",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.43.0",
+    "passmark": "^1.0.6",
+    "dotenv": "^16.4.5",
+    "typescript": "^5.4.5"
+  }
+}
