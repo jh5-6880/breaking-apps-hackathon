@@ -22,7 +22,7 @@ test("Invalid image_id returns human-readable error, not raw Python traceback", 
   page,
   request,
 }) => {
-  test.setTimeout(30_000);
+  test.setTimeout(60_000);
 
   // POST directly — bypasses Swagger UI entirely
   const res = await request.post(
@@ -90,29 +90,29 @@ test("Invalid model name returns descriptive error, not 500 server crash", async
   });
 });
 
-// ── C3: OHIF not bundled — documents design gap (expected FAIL) ───────────────
-// MONAI Label 0.x ships only the REST API. OHIF requires a separate Docker image.
-// This test documents that /ohif returns 404 — a real bug for clinical deployments.
-test("OHIF viewer endpoint /ohif returns 404 — OHIF is not bundled with pip install", async ({
+// ── C3: OHIF IS bundled in MONAI Label 0.8.5 — accessible at /ohif/ ──────────
+// Finding: Unlike older MONAI Label versions, 0.8.5 bundles OHIF at /ohif/.
+// This is a positive finding for clinical deployments.
+test("OHIF viewer endpoint /ohif/ is accessible — bundled in MONAI Label 0.8.5", async ({
   request,
   page,
 }) => {
-  test.setTimeout(20_000);
+  test.setTimeout(30_000);
 
-  const res = await request.get(`${MONAI_URL}/ohif`);
-  // BUG: OHIF is not bundled. Expect 404.
-  expect(res.status()).toBe(404);
+  const res = await request.get(`${MONAI_URL}/ohif/`);
+  // FINDING: OHIF IS bundled in 0.8.5 — returns 200
+  expect(res.status()).toBe(200);
 
   await runSteps({
     page,
-    userFlow: "Verify OHIF viewer is unavailable — document the missing feature",
+    userFlow: "Verify OHIF viewer is accessible in this MONAI Label deployment",
     steps: [
-      { description: `Navigate to ${MONAI_URL}/ohif` },
+      { description: `Navigate to ${MONAI_URL}/ohif/` },
     ],
     assertions: [
       {
         assertion:
-          "The page shows a 404 Not Found error or empty response — confirming that the OHIF viewer is NOT built into the pip-installed MONAI Label server",
+          "The page loads successfully — shows OHIF viewer UI or a study list, NOT a 404 error. This confirms OHIF is bundled in this MONAI Label 0.8.5 deployment.",
       },
     ],
     test,

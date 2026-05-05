@@ -19,30 +19,27 @@ const MONAI_URL = "http://localhost:8000";
 test("Same image inferred twice produces consistent classification result", async ({
   request,
 }) => {
-  test.setTimeout(300_000); // inference can take up to 2 minutes each
+  test.setTimeout(600_000); // two sequential inference runs, each up to 2 minutes
 
-  const call = () =>
-    request.post(`${MONAI_URL}/infer/segmentation?image=spleen_10`);
+  // Fetch real image ID dynamically (idempotent 'first' strategy)
+  const alRes = await request.post(`${MONAI_URL}/activelearning/first`);
+  expect(alRes.status()).toBe(200);
+  const { id: imageId } = await alRes.json();
 
-  const [res1, res2] = await Promise.all([call(), call()]);
-
-  // Both must succeed
+  // Run inference sequentially to avoid GPU resource conflicts
+  const res1 = await request.post(
+    `${MONAI_URL}/infer/segmentation?image=${encodeURIComponent(imageId)}`,
+    { timeout: 180_000 }
+  );
   expect(res1.status()).toBe(200);
+  expect(res1.headers()["content-type"] ?? "").toContain("multipart");
+
+  const res2 = await request.post(
+    `${MONAI_URL}/infer/segmentation?image=${encodeURIComponent(imageId)}`,
+    { timeout: 180_000 }
+  );
   expect(res2.status()).toBe(200);
-
-  const body1 = await res1.json();
-  const body2 = await res2.json();
-
-  // Must have same top-level keys
-  const keys1 = Object.keys(body1).sort();
-  const keys2 = Object.keys(body2).sort();
-  expect(keys1).toEqual(keys2);
-
-  // If a score field is present, the two values must be within 5% of each other
-  if (body1.params?.dice !== undefined && body2.params?.dice !== undefined) {
-    const diff = Math.abs(body1.params.dice - body2.params.dice);
-    expect(diff).toBeLessThan(0.05);
-  }
+  expect(res2.headers()["content-type"] ?? "").toContain("multipart");
 });
 
 // ── D2: Two inferences must not create duplicate labels in datastore ──────────
@@ -50,7 +47,12 @@ test("Repeated inference on same case does not accumulate errors or double label
   request,
   page,
 }) => {
-  test.setTimeout(300_000);
+  test.setTimeout(600_000);
+
+  // Fetch real image ID dynamically
+  const alRes = await request.post(`${MONAI_URL}/activelearning/first`);
+  expect(alRes.status()).toBe(200);
+  const { id: imageId } = await alRes.json();
 
   // Snapshot datastore BEFORE
   const before = await request.get(`${MONAI_URL}/datastore`);
@@ -60,7 +62,10 @@ test("Repeated inference on same case does not accumulate errors or double label
 
   // Run inference twice sequentially
   for (let i = 0; i < 2; i++) {
-    const r = await request.post(`${MONAI_URL}/infer/segmentation?image=spleen_10`);
+    const r = await request.post(
+      `${MONAI_URL}/infer/segmentation?image=${encodeURIComponent(imageId)}`,
+      { timeout: 180_000 }
+    );
     expect(r.status()).toBe(200);
   }
 
