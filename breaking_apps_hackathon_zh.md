@@ -86,9 +86,13 @@ await runSteps({
 
 ---
 
-## Swagger UI 的超時問題（工具本身的 bug）
+## Swagger UI 的超時問題，以及 OpenRouter quota 被吃光
 
-測試 MONAI Label（一個醫學影像標注伺服器）時，我踩到了 Passmark 本身的限制。
+測試 MONAI Label（一個醫學影像標注伺服器）時，我踩到了兩個問題。
+
+第一個是 API quota：測到一半，OpenRouter 的 key 直接跑到 total limit，後面的測試全部 `RESOURCE_EXHAUSTED`。中途切換到 Google AI Studio（`GOOGLE_GENERATIVE_AI_API_KEY`），`setup.ts` 改成 `gateway: "none"` + `google/gemini-3-flash`，重啟就繼續跑。
+
+第二個是 Passmark 本身的限制。
 
 原始的測試設計是：讓 Passmark 打開 Swagger UI，點選 endpoint，填參數，Execute，等回應。結果 22 個測試案例全部超時（60 秒限制），一個都沒過。
 
@@ -108,17 +112,26 @@ test("Datastore lists available images", async ({ page }) => {
   });
 });
 
-// POST 用 request fixture，不需要 Passmark
+// POST 用 request fixture，先拿動態 image ID
 test("Infer segmentation endpoint returns 200", async ({ request }) => {
-  const response = await request.post(`http://localhost:8000/infer/segmentation?image=spleen_10`);
+  const al = await request.post(`http://localhost:8000/activelearning/first`);
+  const { id: imageId } = await al.json();
+  const response = await request.post(
+    `http://localhost:8000/infer/segmentation?image=${encodeURIComponent(imageId)}`,
+    { timeout: 150_000 }
+  );
   expect(response.status()).toBe(200);
   expect(response.headers()["content-type"]).toContain("multipart");
 });
 ```
 
-修完之後：6/6 PASS，跑完花 2 分 35 秒。
+完整跑完 4 個套件（a/b/c/d）的結果：**18/19 通過，1 skip**。a-smoke-tests 7/7，c-error-handling 4/4，d-reproducibility 2/2，b-ux-radiologist-flow 5 pass + 1 skip（OHIF 互動流程在 headless 模式下無法自動化）。
 
-另外踩到一個坑：`/activelearning/next_sample` 這個 URL 是錯的。MONAI Label 的 endpoint 設計是 `/activelearning/{strategy}`，strategy 要傳 `random` 或 `first` 或 `last`，不是 `next_sample`。`next_sample` 被當成 strategy 名稱傳進去，server 直接 500。
+另外踩到兩個坑：
+
+第一個：`/activelearning/next_sample` URL 是錯的。MONAI Label 的 endpoint 設計是 `/activelearning/{strategy}`，strategy 要傳 `random` 或 `first` 或 `last`，不是 `next_sample`。`next_sample` 被當成 strategy 名稱傳進去，server 直接 500。
+
+第二個：image ID 不能 hardcode。我最初寫 `image=spleen_10`，跑出來 4xx——因為 datastore 裡的 image ID 是 UUID 格式，不是 `spleen_10`。正確做法是先 call `/activelearning/first` 拿到真實 ID，再帶進 inference 請求。
 
 ---
 
@@ -132,11 +145,15 @@ Edge case 測試裡有一個 D3：提交 10 個 prompt 之後，檢查有沒有�
 
 ---
 
-## OHIF Viewer 沒有附在 pip install monailabel 裡
+## MONAI Label 0.8.5 的意外發現：OHIF 已內建
 
 MONAI Label 有個功能是整合 OHIF（Open Health Imaging Foundation）viewer，讓標注員在瀏覽器裡直接看 3D CT。
 
-但是 `pip install monailabel` 裝的只是 REST API server。`localhost:8000/ohif` 是 404。要有 OHIF 需要另外跑一個 Docker container。這個不是 bug，但文件沒說清楚，第一次碰到可能會困惑。
+我原本預期 `/ohif` 是 404——舊文件和 Stack Overflow 討論都說 OHIF 要另外跑 Docker container。所以測試裡寫了 `expect(res.status()).toBe(404)` 當作 bug 記錄。
+
+跑完：全部 FAIL。因為 **MONAI Label 0.8.5 已經把 OHIF bundled 進去了**，`/ohif/` 回 200，完整的 viewer 直接能用，不需要額外的 Docker image。這算是版本升級帶來的正向 breaking change——測試預期要跟著改。
+
+改完斷言之後，OHIF 相關的測試（B1、C3）全部通過。
 
 ---
 
