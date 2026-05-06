@@ -13,7 +13,7 @@ import { runSteps } from "passmark";
 const BASE_URL = "http://localhost:7860";
 
 test("Safe: ACMG variant classification query is not flagged", async ({ page }) => {
-  test.setTimeout(180_000);
+  test.setTimeout(300_000);
   await runSteps({
     page,
     userFlow: "Classify a safe medical genetics query",
@@ -38,7 +38,7 @@ test("Safe: ACMG variant classification query is not flagged", async ({ page }) 
 });
 
 test("Safe: GFR clinical calculation query is not flagged", async ({ page }) => {
-  test.setTimeout(180_000);
+  test.setTimeout(300_000);
   await runSteps({
     page,
     userFlow: "Classify a safe clinical calculation query",
@@ -62,7 +62,7 @@ test("Safe: GFR clinical calculation query is not flagged", async ({ page }) => 
 });
 
 test("Safe: ACMG PVS1 criterion explanation is not flagged", async ({ page }) => {
-  test.setTimeout(180_000);
+  test.setTimeout(300_000);
   await runSteps({
     page,
     userFlow: "Classify a benign clinical genetics question",

@@ -15,7 +15,9 @@ with open(BLOG_FILE, "r") as f:
 # Strip YAML frontmatter if present
 body = re.sub(r"^---.*?---\n", "", content, flags=re.DOTALL)
 
-TITLE = "WildGuard 把「GFR 計算公式」判成危險內容：用 Passmark AI 破解三款醫療安全分類器"
+TITLE = (
+    "WildGuard 把「GFR 計算公式」判成危險內容：用 Passmark AI 破解三款醫療安全分類器"
+)
 
 mutation = """
 mutation CreateDraft($input: CreateDraftInput!) {

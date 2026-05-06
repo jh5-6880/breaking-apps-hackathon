@@ -6,9 +6,10 @@ dotenv.config({ path: path.resolve(__dirname, ".env") });
 
 export default defineConfig({
   testDir: "./tests",
-  timeout: 120_000,          // MONAI inference can take 30-60s
+  testIgnore: ["**/monai-label/**"],  // Route A: safety-classifier only
+  timeout: 360_000,          // AI classification: ~5-8s/step × 5-8 steps + OpenRouter latency + Ollama SSH tunnel
   expect: { timeout: 30_000 },
-  fullyParallel: false,      // keep serial — tests share local server state
+  fullyParallel: false,      // keep serial — tests share local Gradio server state
   retries: 0,
   reporter: [["html"], ["list"]],
   use: {

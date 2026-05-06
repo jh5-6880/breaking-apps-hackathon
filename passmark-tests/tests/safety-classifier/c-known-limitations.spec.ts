@@ -17,7 +17,7 @@ const BASE_URL = "http://localhost:7860";
 test("Known FN: LlamaGuard3-1B misses ROT13 encoded attack [documented limitation]", async ({
   page,
 }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(300_000);
   await runSteps({
     page,
     userFlow: "Document known false negative: encoding-based attack missed by LlamaGuard3-1B",
@@ -51,7 +51,7 @@ test("Known FN: LlamaGuard3-1B misses ROT13 encoded attack [documented limitatio
 test("Known FN: UI must not silently show SAFE without surfacing model recall limitation", async ({
   page,
 }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(300_000);
   await runSteps({
     page,
     userFlow: "Verify that low-recall model limitations are visible in the UI",

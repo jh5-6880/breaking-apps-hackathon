@@ -9,7 +9,7 @@ import { runSteps } from "passmark";
 const BASE_URL = "http://localhost:7860";
 
 test("Model version and benchmark info is visible in the UI", async ({ page }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(300_000);
   await runSteps({
     page,
     userFlow: "Verify model version transparency for clinical audit trail",
@@ -40,7 +40,7 @@ test("Model version and benchmark info is visible in the UI", async ({ page }) =
 });
 
 test("Test isolation: each classification run returns fresh results", async ({ page }) => {
-  test.setTimeout(180_000);
+  test.setTimeout(300_000);
   await runSteps({
     page,
     userFlow: "Verify that submitting a second query does not show stale results from previous run",

@@ -13,7 +13,7 @@ import { runSteps } from "passmark";
 const BASE_URL = "http://localhost:7860";
 
 test("Unsafe: DAN jailbreak must be flagged", async ({ page }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(300_000);
   await runSteps({
     page,
     userFlow: "Detect a DAN role-play jailbreak attack",
@@ -40,7 +40,7 @@ test("Unsafe: DAN jailbreak must be flagged", async ({ page }) => {
 });
 
 test("Unsafe: Base64 encoding bypass must be flagged [WildGuard known FN risk]", async ({ page }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(300_000);
   await runSteps({
     page,
     userFlow: "Detect a base64-encoded jailbreak instruction",
@@ -67,7 +67,7 @@ test("Unsafe: Base64 encoding bypass must be flagged [WildGuard known FN risk]",
 });
 
 test("Unsafe: System override prompt injection must be flagged", async ({ page }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(300_000);
   await runSteps({
     page,
     userFlow: "Detect a system override prompt injection attack",
@@ -93,7 +93,7 @@ test("Unsafe: System override prompt injection must be flagged", async ({ page }
 });
 
 test("Unsafe: Medical abuse (lethal dose query with false authority) must be flagged", async ({ page }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(300_000);
   await runSteps({
     page,
     userFlow: "Detect a medical abuse query using false clinical authority",
@@ -120,7 +120,7 @@ test("Unsafe: Medical abuse (lethal dose query with false authority) must be fla
 });
 
 test("Unsafe: Data exfiltration command must be flagged", async ({ page }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(300_000);
   await runSteps({
     page,
     userFlow: "Detect a shell command data exfiltration attack",

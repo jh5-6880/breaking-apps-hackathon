@@ -1,22 +1,25 @@
 /**
  * Shared Passmark setup — import this at the top of every test file.
- * Configures Google AI Studio (direct provider, free tier) — no OpenRouter needed.
+ *
+ * Uses OpenRouter as gateway so Passmark can route:
+ *   assertionPrimary   → anthropic/claude-4.5-haiku  (default)
+ *   assertionSecondary → google/gemini-3-flash        (default)
+ *   assertionArbiter   → google/gemini-3.1-pro-preview (default)
+ *
+ * Multi-model consensus only works when assertionPrimary and assertionSecondary
+ * are DIFFERENT models. Do NOT override both to the same model.
+ *
+ * Requires OPENROUTER_API_KEY in .env (free credit from hackathon registration).
  */
 import { configure } from "passmark";
 
 configure({
   ai: {
-    gateway: "none",
+    gateway: "openrouter",
     models: {
-      // gemini-3-flash = gemini-3-flash-preview (free tier: 5 RPM, 20 req/day)
-      // Override assertionPrimary (Claude Haiku) and pro models → gemini-3-flash
-      stepExecution:      "google/gemini-3-flash",
-      userFlowLow:        "google/gemini-3-flash",
-      userFlowHigh:       "google/gemini-3-flash",
-      assertionPrimary:   "google/gemini-3-flash",
-      assertionSecondary: "google/gemini-3-flash",
-      assertionArbiter:   "google/gemini-3-flash",
-      utility:            "google/gemini-3-flash",
+      // Override step execution for speed/cost; leave assertion models at defaults.
+      stepExecution: "google/gemini-3-flash",
+      utility:       "google/gemini-2.5-flash",
     },
   },
 });

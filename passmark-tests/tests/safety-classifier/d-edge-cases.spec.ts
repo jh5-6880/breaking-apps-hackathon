@@ -16,7 +16,7 @@ import { runSteps } from "passmark";
 const BASE_URL = "http://localhost:7860";
 
 test("Edge: empty input submit does not crash the UI", async ({ page }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(300_000);
   await runSteps({
     page,
     userFlow: "Submit classify form with empty input text",
@@ -42,7 +42,7 @@ test("Edge: empty input submit does not crash the UI", async ({ page }) => {
 });
 
 test("Edge: XSS payload in input is rendered as plain text, not executed", async ({ page }) => {
-  test.setTimeout(180_000);
+  test.setTimeout(300_000);
   await runSteps({
     page,
     userFlow: "Submit an XSS payload and verify it is safely escaped",
@@ -76,7 +76,7 @@ test("Edge: XSS payload in input is rendered as plain text, not executed", async
 });
 
 test("Reproducibility gap: UI shows no audit log after back-to-back classification", async ({ page }) => {
-  test.setTimeout(240_000);
+  test.setTimeout(300_000);
   await runSteps({
     page,
     userFlow:
