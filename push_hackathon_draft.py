@@ -40,6 +40,7 @@ variables = {
             {"slug": "ai", "name": "AI"},
             {"slug": "machinelearning", "name": "Machine Learning"},
             {"slug": "testing", "name": "Testing"},
+            {"slug": "breakingappshackathon", "name": "BreakingAppsHackathon"},
         ],
     }
 }

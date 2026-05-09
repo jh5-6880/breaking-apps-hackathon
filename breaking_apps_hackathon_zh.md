@@ -198,3 +198,5 @@ Passmark 的 AI 斷言直接從截圖讀數字，不需要 CSS selector——對
 - Test target: `safety-classifier/app.py`（Gradio，port 7860）
 - 硬體：RTX 3090 24GB，SSH tunnel → `localhost:11435`（Ollama）
 
+#BreakingAppsHackathon
+
